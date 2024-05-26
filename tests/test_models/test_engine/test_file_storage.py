@@ -3,7 +3,6 @@
 Contains the TestFileStorageDocs classes
 """
 
-from datetime import datetime
 import inspect
 import models
 from models.engine import file_storage
@@ -15,7 +14,6 @@ from models.review import Review
 from models.state import State
 from models.user import User
 import json
-import os
 import pep8
 import unittest
 FileStorage = file_storage.FileStorage
@@ -113,3 +111,27 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_get_method(self):
+        """Test the get method in FileStorage"""
+        storage = FileStorage()
+        obj = State()
+        storage.new(obj)
+        retrieved_obj = storage.get(State, obj.id)
+        self.assertIs(obj, retrieved_obj, "Get method did not retrieve the \
+                        object")
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_count_method(self):
+        """Test the count method in FileStorage"""
+        storage = FileStorage()
+        save = FileStorage._FileStorage__objects
+        FileStorage._FileStorage__objects = {}
+        obj1 = State()
+        obj2 = State()
+        storage.new(obj1)
+        storage.new(obj2)
+        self.assertEqual(storage.count(State), 2, "Count method did not \
+                         return the correct count")
+        FileStorage._FileStorage__objects = save
